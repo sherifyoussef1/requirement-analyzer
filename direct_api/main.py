@@ -7,11 +7,12 @@ from prompts import IMPROVE_PROMPT
 from prompts import TESTS_PROMPT
 
 load_dotenv()
+GEMINI_MODEL = "gemini-3.1-flash-lite"
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
 requirement = open("samples/input.txt").read()
 prompt = ANALYZE_PROMPT.format(requirement=requirement)
-reply = client.models.generate_content(
-    model="gemini-3.8-flash", contents=prompt)  
+reply = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
 #print(reply.text)
 
 def parse_json(text):
@@ -23,17 +24,17 @@ def parse_json(text):
         raise SystemExit(1)
         
 analysis = parse_json(reply.text)
-print("Sum: ",analysis["summary"])
+print("summary: ",analysis["summary"])
 
 prompt = IMPROVE_PROMPT.format(
     requirement=requirement,
     analysis=json.dumps(analysis, indent=2))
-reply = client.models.generate_content( model="gemini-3.8-flash", contents=prompt)
+reply = client.models.generate_content( model=GEMINI_MODEL, contents=prompt)
 improved = parse_json(reply.text)
-print(improved["improved_requirement"])
+print("improved requirement: ",improved["improved_requirement"])
 
 prompt = TESTS_PROMPT.format(improved=improved["improved_requirement"])
-reply = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+reply = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
 tests = parse_json(reply.text)
 for group in ["happy_path", "validation", "edge_cases", "failures"]:
     print(group)
